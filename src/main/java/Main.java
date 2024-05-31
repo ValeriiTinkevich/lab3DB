@@ -19,8 +19,6 @@ public class Main {
         }
         String user = System.getenv("dbuser");
         String password = System.getenv("dbpassword");
-        user = "s353054";
-        password = "R9ZCXNJCux7jH4fV";
         logger.addHandler(fh);
         ConsoleHandler consoleHandler = new ConsoleHandler();
         logger.setUseParentHandlers(false);
