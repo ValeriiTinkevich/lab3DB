@@ -1,3 +1,5 @@
+package ru.valerit;
+
 import java.sql.*;
 import java.util.Properties;
 
@@ -7,7 +9,7 @@ public class DataBaseManager {
     public DataBaseManager(String user, String password) throws SQLException {
         try {
             Class.forName("org.postgresql.Driver");
-            String url = "jdbc:postgresql://localhost:45345/studs";
+            String url = "jdbc:postgresql://localhost/studs";
             Properties props = new Properties();
             props.setProperty("user", user);
             props.setProperty("password", password);
@@ -19,26 +21,32 @@ public class DataBaseManager {
         }
     }
 
-    public void getKeys() throws SQLException {
-        String query = "select jsonb_object_keys(conditionforresult) from condition";
+    public String getKeys() throws SQLException {
+        String query = "select * from condition where condition_id = 1";
         PreparedStatement preparedStatement = connection.prepareStatement(query);
         if (preparedStatement.execute()) {
             ResultSet rs = preparedStatement.getResultSet();
-            while (rs.next()) {
-                System.out.println(rs.getString(1));
+            if (rs.next()) {
+                return rs.getString(2);
             }
         }
+        return "";
     }
 
-    public void addKey(String key, String value) throws SQLException {
+    public boolean addKey(String key, String value) throws SQLException {
         String keyforcondition = "'{\"" + key + "\": " + "\"" + value + "\"}'";
         System.out.println(keyforcondition);
         String query = "UPDATE condition SET conditionforresult = conditionforresult|| " + keyforcondition + "::jsonb; ";
         PreparedStatement preparedStatement = connection.prepareStatement(query);
         if (preparedStatement.execute()) {
             ResultSet rs = preparedStatement.getResultSet();
-            if(rs.next()) System.out.println("key: value added");
+            if(rs.next()) {
+                System.out.println("key: value added");
+                return true;
+            }
+            else return false;
         }
+        return true;
     }
 
 
@@ -60,7 +68,7 @@ public class DataBaseManager {
         return condition;
     }
 
-    public void queryWithCondition(String key) throws SQLException {
+    public boolean queryWithCondition(String key) throws SQLException {
         String condition = reformatCondition(key);
         String query = "SELECT * FROM research " + condition + ";";
         PreparedStatement preparedStatement = connection.prepareStatement(query);
@@ -68,7 +76,7 @@ public class DataBaseManager {
             ResultSet rs = preparedStatement.getResultSet();
             ResultSetMetaData rsmd = rs.getMetaData();
             if (!rs.isBeforeFirst() ) {
-                System.out.println("No data or key is invalid");
+                return false;
             } else {
                 int columncount = rsmd.getColumnCount();
                 for (int i = 1; i <= columncount; i++) {
@@ -90,6 +98,7 @@ public class DataBaseManager {
                 }
             }
         }
+        return true;
     }
 
 }
