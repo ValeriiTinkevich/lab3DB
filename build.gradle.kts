@@ -28,8 +28,27 @@ tasks.register<Jar>("fatJar") {
     archiveBaseName.set("${project.name}-all")
     from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
     with(tasks.getByName("jar") as CopySpec)
-    destinationDirectory.set(file("C:/Users/User/Desktop/lab7out"))
+    destinationDirectory.set(file({rootDir}))
 }
+
+tasks.create("deploy") {
+
+    doLast {
+        val user = (System.getenv("DEPLOYUSER") ?: "ERROR")
+        val userAndHost : String = user + "@" + (System.getenv ("DEPLOYHOST")  ?: "ERROR")
+
+        val pwd : String = System.getenv("DEPLOYPWD") ?: "ERROR"
+
+        println("$userAndHost :$pwd")
+
+        exec {
+            workingDir(".")
+            commandLine("pscp", "-pw", pwd, "-P", 2222, "C:/Users/User/Desktop/lab7out/**.jar", "$userAndHost:/home/studs/$user/lab3db")
+//            commandLine("putty.exe", "-ssh", userAndHost, "-P", "2222", "-pw", pwd)
+        }
+    }
+}
+
 
 
 tasks.test {
